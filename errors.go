@@ -75,7 +75,7 @@ func NewClientf(format string, a ...interface{}) Error {
 
 // NewNotImplemented creates a new not implemented error.
 func NewNotImplemented() Error {
-	return Error{IsNotImplementedErr: true}
+	return Error{IsNotImplementedErr: true, Message: "not implemented"}
 }
 
 // NewNotImplementedf creates a new not implemented error with fmt.Printf
