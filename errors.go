@@ -235,3 +235,10 @@ func (c *NotFoundErrCheck) IsNotFoundError(err error) bool {
 	errC, ok := err.(Error)
 	return ok && errC.NotFound()
 }
+
+type AllErrCheck struct {
+	AuthErrCheck
+	NotFoundErrCheck
+	NotImplErrCheck
+	ClErrCheck
+}
