@@ -2,6 +2,31 @@ package typederrs
 
 import "fmt"
 
+type IsAuthErrChecker interface {
+	IsAuthError(error)bool
+	IsUnauthorizedError(error)bool
+	IsForbiddenError(error)bool
+}
+
+type IsNotFoundErrChecker interface {
+	IsNotFoundError(error)bool
+}
+
+type IsNotImplErrChecker interface {
+	IsNotImplementedError(error) bool
+}
+
+type IsClErrChecker interface {
+	IsClientError(error) bool
+}
+
+type AllErrChecker interface {
+	IsAuthErrChecker
+	IsNotFoundErrChecker
+	IsNotImplErrChecker
+	IsClErrChecker
+}
+
 // Error implements the Error interface and helps distinguish whether an error
 // is a client error or an auth error.
 type Error struct {
