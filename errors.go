@@ -36,13 +36,13 @@ type Error struct {
 	IsClErr             bool
 	IsNotFoundErr       bool
 	IsNotImplementedErr bool
-	Message             string
+	Data                interface{}
 }
 
 // Error returns the error message of the error (without the distinguishing flags
 // such as client error).
 func (e Error) Error() string {
-	return e.Message
+	return fmt.Sprint(e.Data)
 }
 
 // Client returns true if this is a client error.
@@ -77,87 +77,87 @@ func (e Error) NotFound() bool {
 }
 
 // New creates a new error.
-func New(message string) Error {
-	return Error{Message: message, IsClErr: false}
+func New(data interface{}) Error {
+	return Error{Data: data, IsClErr: false}
 }
 
 // Newf creates a new error with fmt.Printf formatting.
 func Newf(format string, a ...interface{}) Error {
-	message := fmt.Sprintf(format, a...)
-	return New(message)
+	data := fmt.Sprintf(format, a...)
+	return New(data)
 }
 
 // NewClient creates a new client error.
-func NewClient(message string) Error {
-	return Error{Message: message, IsClErr: true}
+func NewClient(data interface{}) Error {
+	return Error{Data: data, IsClErr: true}
 }
 
 // NewClientf creates a new client error with fmt.Printf style formatting.
 func NewClientf(format string, a ...interface{}) Error {
-	message := fmt.Sprintf(format, a...)
-	return NewClient(message)
+	data := fmt.Sprintf(format, a...)
+	return NewClient(data)
 }
 
 // NewNotImplemented creates a new not implemented error.
 func NewNotImplemented() Error {
-	return Error{IsNotImplementedErr: true, Message: "not implemented"}
+	return Error{IsNotImplementedErr: true, Data: "not implemented"}
 }
 
 // NewNotImplementedf creates a new not implemented error with fmt.Printf
 // style formatting.
 func NewNotImplementedf(format string, a ...interface{}) Error {
-	message := fmt.Sprintf(format, a...)
-	return Error{Message: message, IsNotImplementedErr: true}
+	data := fmt.Sprintf(format, a...)
+	return Error{Data: data, IsNotImplementedErr: true}
 }
 
 // NewAuth creates a new auth error. It is not specific to the type of auth
 // error. Use NewForbidden(string) or NewUnauthorized(string) to establish
 // a more specific Auth error.
-func NewAuth(message string) Error {
-	return Error{Message: message, IsAuthErr: true}
+func NewAuth(data interface{}) Error {
+	return Error{Data: data, IsAuthErr: true}
 }
 
 // NewForbidden creates a new forbidden auth error a la 403 (http.StatusForbidden) error.
 // This will also resolve as an Auth error.
-func NewForbidden(message string) Error {
-	return Error{Message: message, IsAuthErr: true, IsForbiddenErr: true}
+func NewForbidden(data interface{}) Error {
+	return Error{Data: data, IsAuthErr: true, IsForbiddenErr: true}
 }
 
 // NewUnauthorized creates a new unauthorized auth error a la 401 (http.StatusUnauthorized) error.
 // This will also resolve as an Auth error.
-func NewUnauthorized(message string) Error {
-	return Error{Message: message, IsAuthErr: true, IsUnauthorizedErr: true}
+func NewUnauthorized(data interface{}) Error {
+	return Error{Data: data, IsAuthErr: true, IsUnauthorizedErr: true}
 }
 
 // NewAuthf creates a new auth error with fmt.Printf style formatting.
 func NewAuthf(format string, a ...interface{}) Error {
-	message := fmt.Sprintf(format, a...)
-	return NewAuth(message)
+	data := fmt.Sprintf(format, a...)
+	return NewAuth(data)
 }
 
 // NewForbiddenf creates a new forbidden auth error with fmt.Printf style formatting.
 // This will also resolve as an Auth error.
 func NewForbiddenf(format string, a ...interface{}) Error {
-	message := fmt.Sprintf(format, a...)
-	return NewForbidden(message)
+	data := fmt.Sprintf(format, a...)
+	return NewForbidden(data)
 }
 
 // NewUnauthorizedf creates a new unauthorized auth error with fmt.Printf style formatting.
 // This will also resolve as an Auth error.
 func NewUnauthorizedf(format string, a ...interface{}) Error {
-	message := fmt.Sprintf(format, a...)
-	return NewUnauthorized(message)
+	data := fmt.Sprintf(format, a...)
+	return NewUnauthorized(data)
 }
 
 // NewNotFound creates a new not found error.
-func NewNotFound(message string) Error {
-	return Error{Message: message, IsNotFoundErr: true}
+func NewNotFound(data interface{}) Error {
+	return Error{Data: data, IsNotFoundErr: true}
 }
 
 // NewNotFoundf creates a new not found error with fmt.Printf style formatting.
 func NewNotFoundf(format string, a ...interface{}) Error {
-	message := fmt.Sprintf(format, a...)
-	return NewNotFound(message)
+	data := fmt.Sprintf(format, a...)
+	return NewNotFound(data)
 }
 
 // ClErrCheck is a helper struct that can be embedded in a custom struct to
