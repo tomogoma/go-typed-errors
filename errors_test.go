@@ -177,7 +177,7 @@ func TestNewNotImplemented(t *testing.T) {
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
-			if err.Error() != "" {
+			if err.Error() != "not implemented" {
 				t.Errorf("expected error message '%s', got '%s'",
 					tc.message, err.Error())
 			}
