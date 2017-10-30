@@ -13,16 +13,11 @@ type testCase struct {
 	messageParams []interface{}
 }
 
-type errorChecker struct {
-	typederrs.AllErrCheck
-}
-
 func Example() {
 
 	// embed relevant 'Checkers' in struct
 	ms := struct {
-		typederrs.NotFoundErrCheck
-		typederrs.NotImplErrCheck
+		typederrs.AllErrCheck
 
 		// do something returns an error which can be checked for type
 		doSomething func() error
@@ -86,7 +81,8 @@ func TestNewf(t *testing.T) {
 }
 
 func TestNewAuth(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -106,7 +102,8 @@ func TestNewAuth(t *testing.T) {
 }
 
 func TestNewAuthf(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -126,7 +123,8 @@ func TestNewAuthf(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -146,7 +144,8 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestNewClientf(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -166,7 +165,8 @@ func TestNewClientf(t *testing.T) {
 }
 
 func TestNewNotImplemented(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -187,7 +187,8 @@ func TestNewNotImplemented(t *testing.T) {
 }
 
 func TestNewNotImplementedf(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -208,7 +209,8 @@ func TestNewNotImplementedf(t *testing.T) {
 }
 
 func TestNewForbidden(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -233,7 +235,8 @@ func TestNewForbidden(t *testing.T) {
 }
 
 func TestNewForbiddenf(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -258,7 +261,8 @@ func TestNewForbiddenf(t *testing.T) {
 }
 
 func TestNewUnauthorized(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -283,7 +287,8 @@ func TestNewUnauthorized(t *testing.T) {
 }
 
 func TestNewUnauthorizedf(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -308,7 +313,8 @@ func TestNewUnauthorizedf(t *testing.T) {
 }
 
 func TestNewNotFound(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -329,7 +335,8 @@ func TestNewNotFound(t *testing.T) {
 }
 
 func TestNewNotFoundf(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -350,7 +357,8 @@ func TestNewNotFoundf(t *testing.T) {
 }
 
 func TestNewRetryable(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
@@ -371,7 +379,8 @@ func TestNewRetryable(t *testing.T) {
 }
 
 func TestNewRetryablef(t *testing.T) {
-	checker := errorChecker{}
+	var checker typederrs.AllErrChecker
+	checker = &typederrs.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
