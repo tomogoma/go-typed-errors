@@ -14,10 +14,7 @@ type testCase struct {
 }
 
 type errorChecker struct {
-	typederrs.ClErrCheck
-	typederrs.AuthErrCheck
-	typederrs.NotFoundErrCheck
-	typederrs.NotImplErrCheck
+	typederrs.AllErrCheck
 }
 
 func Example() {
@@ -347,6 +344,48 @@ func TestNewNotFoundf(t *testing.T) {
 			if !checker.IsNotFoundError(err) {
 				t.Errorf("Expected IsNotFoundError() true but got %t",
 					checker.IsNotFoundError(err))
+			}
+		})
+	}
+}
+
+func TestNewRetryable(t *testing.T) {
+	checker := errorChecker{}
+	for _, tc := range messageTestCases() {
+		t.Run(tc.name, func(t *testing.T) {
+			var err error
+			err = typederrs.NewRetryable(tc.message)
+			if err == nil {
+				t.Fatalf("expected an error, got nil")
+			}
+			if err.Error() != tc.message {
+				t.Errorf("expected error message '%s', got '%s'",
+					tc.message, err.Error())
+			}
+			if !checker.IsRetryableError(err) {
+				t.Errorf("Expected IsRetryableError() true but got %t",
+					checker.IsRetryableError(err))
+			}
+		})
+	}
+}
+
+func TestNewRetryablef(t *testing.T) {
+	checker := errorChecker{}
+	for _, tc := range fmtdMessageTestCases() {
+		t.Run(tc.name, func(t *testing.T) {
+			var err error
+			err = typederrs.NewRetryablef(tc.message, tc.messageParams...)
+			if err == nil {
+				t.Fatalf("expected an error, got nil")
+			}
+			if err.Error() != fmt.Sprintf(tc.message, tc.messageParams...) {
+				t.Fatalf("expected error message '%s', got '%s'",
+					fmt.Sprintf(tc.message, tc.messageParams...), err.Error())
+			}
+			if !checker.IsRetryableError(err) {
+				t.Errorf("Expected IsRetryableError() true but got %t",
+					checker.IsRetryableError(err))
 			}
 		})
 	}

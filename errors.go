@@ -20,11 +20,16 @@ type IsClErrChecker interface {
 	IsClientError(error) bool
 }
 
+type IsRetryableErrChecker interface {
+	IsRetryableError(error) bool
+}
+
 type AllErrChecker interface {
 	IsAuthErrChecker
 	IsNotFoundErrChecker
 	IsNotImplErrChecker
 	IsClErrChecker
+	IsRetryableErrChecker
 }
 
 // Error implements the Error interface and helps distinguish whether an error
@@ -36,6 +41,7 @@ type Error struct {
 	IsClErr             bool
 	IsNotFoundErr       bool
 	IsNotImplementedErr bool
+	IsRetryableErr bool
 	Data                interface{}
 }
 
@@ -74,6 +80,12 @@ func (e Error) Forbidden() bool {
 // being fetched was not found.
 func (e Error) NotFound() bool {
 	return e.IsNotFoundErr
+}
+
+// Retryable returns true if this is error is not permanent and should
+// be retried
+func (e Error) Retryable() bool {
+	return e.IsRetryableErr
 }
 
 // New creates a new error.
@@ -160,6 +172,17 @@ func NewNotFoundf(format string, a ...interface{}) Error {
 	return NewNotFound(data)
 }
 
+// NewRetryable creates a new retryable error.
+func NewRetryable(data interface{}) Error {
+	return Error{Data: data, IsRetryableErr: true}
+}
+
+// NewRetryablef creates a new retryable error with fmt.Printf style formatting.
+func NewRetryablef(format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewRetryable(data)
+}
+
 // ClErrCheck is a helper struct that can be embedded in a custom struct to
 // give the custom struct the extra method IsClientError(err error). e.g:
 //  type Custom struct {
@@ -236,9 +259,31 @@ func (c *NotFoundErrCheck) IsNotFoundError(err error) bool {
 	return ok && errC.NotFound()
 }
 
+// RetryableErrCheck is a helper struct that can be embedded in a custom struct to
+// give the custom struct the extra method IsRetryableError(err error). e.g:
+//  type Custom struct {
+//      ...
+//      errors.NotFoundErrCheck
+//  }
+type RetryableErrCheck struct {
+}
+
+// IsRetryableError returns true if the supplied error retryable, false otherwise.
+func (c *RetryableErrCheck) IsRetryableError(err error) bool {
+	errC, ok := err.(Error)
+	return ok && errC.Retryable()
+}
+
+// AllErrCheck is a helper struct that can be embedded in a custom struct to
+// give said custom struct the extra Is...Error(err error) methods. e.g:
+//  type Custom struct {
+//      ...
+//      errors.AllErrCheck
+//  }
 type AllErrCheck struct {
 	AuthErrCheck
 	NotFoundErrCheck
 	NotImplErrCheck
 	ClErrCheck
+	RetryableErrCheck
 }
