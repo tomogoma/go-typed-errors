@@ -3,13 +3,13 @@ package typederrs
 import "fmt"
 
 type IsAuthErrChecker interface {
-	IsAuthError(error)bool
-	IsUnauthorizedError(error)bool
-	IsForbiddenError(error)bool
+	IsAuthError(error) bool
+	IsUnauthorizedError(error) bool
+	IsForbiddenError(error) bool
 }
 
 type IsNotFoundErrChecker interface {
-	IsNotFoundError(error)bool
+	IsNotFoundError(error) bool
 }
 
 type IsNotImplErrChecker interface {
@@ -41,7 +41,7 @@ type Error struct {
 	IsClErr             bool
 	IsNotFoundErr       bool
 	IsNotImplementedErr bool
-	IsRetryableErr bool
+	IsRetryableErr      bool
 	Data                interface{}
 }
 
