@@ -8,6 +8,7 @@ import (
 type RetryConfig struct {
 	backoff *backoff.Backoff
 	checker IsRetryableErrChecker
+	maxRetries int
 }
 
 type RetryOption func(*RetryConfig)
@@ -36,6 +37,12 @@ func RetryWithBackoffJitter(t bool) RetryOption {
 	}
 }
 
+func RetryWithMaxRetries(n int) RetryOption {
+	return func(b *RetryConfig) {
+		b.maxRetries = n
+	}
+}
+
 func RetryWithRetryableErrChecker(ch IsRetryableErrChecker) RetryOption {
 	return func(b *RetryConfig) {
 		b.checker = ch
@@ -47,6 +54,7 @@ func DoWithRetries(doer func() error, opts ...RetryOption) error {
 	conf := RetryConfig{
 		backoff: &backoff.Backoff{Min: 2 * time.Second, Max: 5 * time.Minute},
 		checker: &RetryableErrCheck{},
+		maxRetries: 5,
 	}
 	for _, f := range opts {
 		f(&conf)
@@ -54,7 +62,7 @@ func DoWithRetries(doer func() error, opts ...RetryOption) error {
 
 	var err error
 
-	for numRetries := 0; numRetries < 5; numRetries++ {
+	for numRetries := 0; numRetries < conf.maxRetries; numRetries++ {
 		err = doer()
 		if err == nil {
 			return nil
