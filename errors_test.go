@@ -1,4 +1,4 @@
-package typederrs_test
+package errors_test
 
 import (
 	"fmt"
@@ -17,14 +17,14 @@ func Example() {
 
 	// embed relevant 'Checkers' in struct
 	ms := struct {
-		typederrs.AllErrCheck
+		errors.AllErrCheck
 
 		// do something returns an error which can be checked for type
 		doSomething func() error
 	}{
 		doSomething: func() error {
 			// return a typed error
-			return typederrs.NewNotFoundf("something went wrong %s", "here")
+			return errors.NewNotFoundf("something went wrong %s", "here")
 		},
 	}
 
@@ -52,7 +52,7 @@ func TestNew(t *testing.T) {
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.New(tc.message)
+			err = errors.New(tc.message)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -68,7 +68,7 @@ func TestNewf(t *testing.T) {
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.Newf(tc.message, tc.messageParams...)
+			err = errors.Newf(tc.message, tc.messageParams...)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -81,12 +81,12 @@ func TestNewf(t *testing.T) {
 }
 
 func TestNewAuth(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewAuth(tc.message)
+			err = errors.NewAuth(tc.message)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -102,12 +102,12 @@ func TestNewAuth(t *testing.T) {
 }
 
 func TestNewAuthf(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewAuthf(tc.message, tc.messageParams...)
+			err = errors.NewAuthf(tc.message, tc.messageParams...)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -123,12 +123,12 @@ func TestNewAuthf(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewClient(tc.message)
+			err = errors.NewClient(tc.message)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -144,12 +144,12 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestNewClientf(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewClientf(tc.message, tc.messageParams...)
+			err = errors.NewClientf(tc.message, tc.messageParams...)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -165,12 +165,12 @@ func TestNewClientf(t *testing.T) {
 }
 
 func TestNewNotImplemented(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewNotImplemented()
+			err = errors.NewNotImplemented()
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -187,12 +187,12 @@ func TestNewNotImplemented(t *testing.T) {
 }
 
 func TestNewNotImplementedf(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewNotImplementedf(tc.message, tc.messageParams...)
+			err = errors.NewNotImplementedf(tc.message, tc.messageParams...)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -209,12 +209,12 @@ func TestNewNotImplementedf(t *testing.T) {
 }
 
 func TestNewForbidden(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewForbidden(tc.message)
+			err = errors.NewForbidden(tc.message)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -235,12 +235,12 @@ func TestNewForbidden(t *testing.T) {
 }
 
 func TestNewForbiddenf(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewForbiddenf(tc.message, tc.messageParams...)
+			err = errors.NewForbiddenf(tc.message, tc.messageParams...)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -261,12 +261,12 @@ func TestNewForbiddenf(t *testing.T) {
 }
 
 func TestNewUnauthorized(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewUnauthorized(tc.message)
+			err = errors.NewUnauthorized(tc.message)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -287,12 +287,12 @@ func TestNewUnauthorized(t *testing.T) {
 }
 
 func TestNewUnauthorizedf(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewUnauthorizedf(tc.message, tc.messageParams...)
+			err = errors.NewUnauthorizedf(tc.message, tc.messageParams...)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -313,12 +313,12 @@ func TestNewUnauthorizedf(t *testing.T) {
 }
 
 func TestNewNotFound(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewNotFound(tc.message)
+			err = errors.NewNotFound(tc.message)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -335,12 +335,12 @@ func TestNewNotFound(t *testing.T) {
 }
 
 func TestNewNotFoundf(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewNotFoundf(tc.message, tc.messageParams...)
+			err = errors.NewNotFoundf(tc.message, tc.messageParams...)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -357,12 +357,12 @@ func TestNewNotFoundf(t *testing.T) {
 }
 
 func TestNewRetryable(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range messageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewRetryable(tc.message)
+			err = errors.NewRetryable(tc.message)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}
@@ -379,12 +379,12 @@ func TestNewRetryable(t *testing.T) {
 }
 
 func TestNewRetryablef(t *testing.T) {
-	var checker typederrs.AllErrChecker
-	checker = &typederrs.AllErrCheck{}
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
 	for _, tc := range fmtdMessageTestCases() {
 		t.Run(tc.name, func(t *testing.T) {
 			var err error
-			err = typederrs.NewRetryablef(tc.message, tc.messageParams...)
+			err = errors.NewRetryablef(tc.message, tc.messageParams...)
 			if err == nil {
 				t.Fatalf("expected an error, got nil")
 			}

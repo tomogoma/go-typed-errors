@@ -1,4 +1,4 @@
-package typederrs
+package errors
 
 import (
 	"time"
