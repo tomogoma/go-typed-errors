@@ -24,12 +24,17 @@ type IsRetryableErrChecker interface {
 	IsRetryableError(error) bool
 }
 
+type IsConflictErrChecker interface {
+	IsConflictError(error) bool
+}
+
 type AllErrChecker interface {
 	IsAuthErrChecker
 	IsNotFoundErrChecker
 	IsNotImplErrChecker
 	IsClErrChecker
 	IsRetryableErrChecker
+	IsConflictErrChecker
 }
 
 // Error implements the Error interface and helps distinguish whether an error
@@ -42,6 +47,7 @@ type Error struct {
 	IsNotFoundErr       bool
 	IsNotImplementedErr bool
 	IsRetryableErr      bool
+	IsConflictErr       bool
 	Data                interface{}
 }
 
@@ -82,10 +88,16 @@ func (e Error) NotFound() bool {
 	return e.IsNotFoundErr
 }
 
-// Retryable returns true if this is error is not permanent and should
+// Retryable returns true if this error is not permanent and should
 // be retried
 func (e Error) Retryable() bool {
 	return e.IsRetryableErr
+}
+
+// Conflict returns true if this error denotes a conflict in resources a la
+// HTTPs 409 error
+func (e Error) Conflict() bool {
+	return e.IsConflictErr
 }
 
 // New creates a new error.
@@ -183,6 +195,17 @@ func NewRetryablef(format string, a ...interface{}) Error {
 	return NewRetryable(data)
 }
 
+// NewConflict creates a new Conflict error.
+func NewConflict(data interface{}) Error {
+	return Error{Data: data, IsConflictErr: true}
+}
+
+// NewConflictf creates a new Conflict error with fmt.Printf style formatting.
+func NewConflictf(format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewConflict(data)
+}
+
 // ClErrCheck is a helper struct that can be embedded in a custom struct to
 // give the custom struct the extra method IsClientError(err error). e.g:
 //  type Custom struct {
@@ -274,6 +297,21 @@ func (c *RetryableErrCheck) IsRetryableError(err error) bool {
 	return ok && errC.Retryable()
 }
 
+// ConflictErrCheck is a helper struct that can be embedded in a custom struct to
+// give the custom struct the extra method IsConflictError(err error). e.g:
+//  type Custom struct {
+//      ...
+//      errors.ConflictErrCheck
+//  }
+type ConflictErrCheck struct {
+}
+
+// IsConflictError returns true if the supplied error is a Conflict error, false otherwise.
+func (c *ConflictErrCheck) IsConflictError(err error) bool {
+	errC, ok := err.(Error)
+	return ok && errC.Conflict()
+}
+
 // AllErrCheck is a helper struct that can be embedded in a custom struct to
 // give said custom struct the extra Is...Error(err error) methods. e.g:
 //  type Custom struct {
@@ -286,4 +324,5 @@ type AllErrCheck struct {
 	NotImplErrCheck
 	ClErrCheck
 	RetryableErrCheck
+	ConflictErrCheck
 }

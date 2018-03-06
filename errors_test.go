@@ -400,6 +400,50 @@ func TestNewRetryablef(t *testing.T) {
 	}
 }
 
+func TestNewConflict(t *testing.T) {
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
+	for _, tc := range messageTestCases() {
+		t.Run(tc.name, func(t *testing.T) {
+			var err error
+			err = errors.NewConflict(tc.message)
+			if err == nil {
+				t.Fatalf("expected an error, got nil")
+			}
+			if err.Error() != tc.message {
+				t.Errorf("expected error message '%s', got '%s'",
+					tc.message, err.Error())
+			}
+			if !checker.IsConflictError(err) {
+				t.Errorf("Expected IsRetryableError() true but got %t",
+					checker.IsRetryableError(err))
+			}
+		})
+	}
+}
+
+func TestNewConflictf(t *testing.T) {
+	var checker errors.AllErrChecker
+	checker = &errors.AllErrCheck{}
+	for _, tc := range fmtdMessageTestCases() {
+		t.Run(tc.name, func(t *testing.T) {
+			var err error
+			err = errors.NewConflictf(tc.message, tc.messageParams...)
+			if err == nil {
+				t.Fatalf("expected an error, got nil")
+			}
+			if err.Error() != fmt.Sprintf(tc.message, tc.messageParams...) {
+				t.Fatalf("expected error message '%s', got '%s'",
+					fmt.Sprintf(tc.message, tc.messageParams...), err.Error())
+			}
+			if !checker.IsConflictError(err) {
+				t.Errorf("Expected IsRetryableError() true but got %t",
+					checker.IsRetryableError(err))
+			}
+		})
+	}
+}
+
 func messageTestCases() []testCase {
 	return []testCase{
 		{name: "has-message", message: "this error message"},
