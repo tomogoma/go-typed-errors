@@ -80,6 +80,7 @@ type Error struct {
 	IsConflictErr           bool
 	IsPreconditionFailedErr bool
 	Data                    interface{}
+	HttpMsg                 string
 }
 
 // Error returns the error message of the error (without the distinguishing flags
@@ -98,42 +99,47 @@ func (e Error) Client() bool {
 // assigned and true if error was written, -1 and false otherwise.
 func (e Error) ToHTTPResponse(w http.ResponseWriter) (int, bool) {
 
+	msg := e.HttpMsg
+	if msg == "" {
+		msg = e.Error()
+	}
+
 	if e.IsAuthErr || e.IsForbiddenErr || e.IsUnauthorizedErr {
 		if e.IsForbiddenErr {
-			http.Error(w, e.Error(), http.StatusForbidden)
+			http.Error(w, msg, http.StatusForbidden)
 			return http.StatusForbidden, true
 		}
-		http.Error(w, e.Error(), http.StatusUnauthorized)
+		http.Error(w, msg, http.StatusUnauthorized)
 		return http.StatusUnauthorized, true
 	}
 
 	if e.IsClErr {
-		http.Error(w, e.Error(), http.StatusBadRequest)
+		http.Error(w, msg, http.StatusBadRequest)
 		return http.StatusBadRequest, true
 	}
 
 	if e.IsNotFoundErr {
-		http.Error(w, e.Error(), http.StatusNotFound)
+		http.Error(w, msg, http.StatusNotFound)
 		return http.StatusNotFound, true
 	}
 
 	if e.IsNotImplementedErr {
-		http.Error(w, e.Error(), http.StatusNotImplemented)
+		http.Error(w, msg, http.StatusNotImplemented)
 		return http.StatusNotImplemented, true
 	}
 
 	if e.IsRetryableErr {
-		http.Error(w, e.Error(), http.StatusServiceUnavailable)
+		http.Error(w, msg, http.StatusServiceUnavailable)
 		return http.StatusServiceUnavailable, true
 	}
 
 	if e.IsConflictErr {
-		http.Error(w, e.Error(), http.StatusConflict)
+		http.Error(w, msg, http.StatusConflict)
 		return http.StatusConflict, true
 	}
 
 	if e.IsPreconditionFailedErr {
-		http.Error(w, e.Error(), http.StatusPreconditionFailed)
+		http.Error(w, msg, http.StatusPreconditionFailed)
 		return http.StatusPreconditionFailed, true
 	}
 
@@ -186,13 +192,26 @@ func (e Error) PreconditionFailed() bool {
 
 // New creates a new error.
 func New(data interface{}) Error {
-	return Error{Data: data, IsClErr: false}
+	return Error{Data: data}
 }
 
 // Newf creates a new error with fmt.Printf formatting.
 func Newf(format string, a ...interface{}) Error {
 	data := fmt.Sprintf(format, a...)
 	return New(data)
+}
+
+// NewWithHttp creates a new error containing a http specific
+// error message.
+func NewWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg}
+}
+
+// NewWithHttp creates a new error containing a http specific
+// error message.
+func NewWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewWithHttp(httpMsg, data)
 }
 
 // NewClient creates a new client error.
@@ -204,6 +223,19 @@ func NewClient(data interface{}) Error {
 func NewClientf(format string, a ...interface{}) Error {
 	data := fmt.Sprintf(format, a...)
 	return NewClient(data)
+}
+
+// NewClientWithHttp creates a new error containing a http specific
+// error message.
+func NewClientWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg, IsClErr: true}
+}
+
+// NewClientWithHttp creates a new error containing a http specific
+// error message.
+func NewClientWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewClientWithHttp(httpMsg, data)
 }
 
 // NewNotImplemented creates a new not implemented error.
@@ -218,6 +250,19 @@ func NewNotImplementedf(format string, a ...interface{}) Error {
 	return Error{Data: data, IsNotImplementedErr: true}
 }
 
+// NewNotImplementedWithHttp creates a new error containing a http specific
+// error message.
+func NewNotImplementedWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg, IsNotImplementedErr: true}
+}
+
+// NewNotImplementedWithHttp creates a new error containing a http specific
+// error message.
+func NewNotImplementedWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewNotImplementedWithHttp(httpMsg, data)
+}
+
 // NewAuth creates a new auth error. It is not specific to the type of auth
 // error. Use NewForbidden(string) or NewUnauthorized(string) to establish
 // a more specific Auth error.
@@ -225,22 +270,29 @@ func NewAuth(data interface{}) Error {
 	return Error{Data: data, IsAuthErr: true}
 }
 
-// NewForbidden creates a new forbidden auth error a la 403 (http.StatusForbidden) error.
-// This will also resolve as an Auth error.
-func NewForbidden(data interface{}) Error {
-	return Error{Data: data, IsAuthErr: true, IsForbiddenErr: true}
-}
-
-// NewUnauthorized creates a new unauthorized auth error a la 401 (http.StatusUnauthorized) error.
-// This will also resolve as an Auth error.
-func NewUnauthorized(data interface{}) Error {
-	return Error{Data: data, IsAuthErr: true, IsUnauthorizedErr: true}
-}
-
 // NewAuthf creates a new auth error with fmt.Printf style formatting.
 func NewAuthf(format string, a ...interface{}) Error {
 	data := fmt.Sprintf(format, a...)
 	return NewAuth(data)
+}
+
+// NewAuthWithHttp creates a new error containing a http specific
+// error message.
+func NewAuthWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg, IsAuthErr: true}
+}
+
+// NewWithHttp creates a new error containing a http specific
+// error message.
+func NewAuthWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewAuthWithHttp(httpMsg, data)
+}
+
+// NewForbidden creates a new forbidden auth error a la 403 (http.StatusForbidden) error.
+// This will also resolve as an Auth error.
+func NewForbidden(data interface{}) Error {
+	return Error{Data: data, IsAuthErr: true, IsForbiddenErr: true}
 }
 
 // NewForbiddenf creates a new forbidden auth error with fmt.Printf style formatting.
@@ -250,11 +302,43 @@ func NewForbiddenf(format string, a ...interface{}) Error {
 	return NewForbidden(data)
 }
 
+// NewForbiddentWithHttp creates a new error containing a http specific
+// error message.
+func NewForbiddentWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg, IsForbiddenErr: true}
+}
+
+// NewForbiddentWithHttp creates a new error containing a http specific
+// error message.
+func NewForbiddentWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewForbiddentWithHttp(httpMsg, data)
+}
+
+// NewUnauthorized creates a new unauthorized auth error a la 401 (http.StatusUnauthorized) error.
+// This will also resolve as an Auth error.
+func NewUnauthorized(data interface{}) Error {
+	return Error{Data: data, IsAuthErr: true, IsUnauthorizedErr: true}
+}
+
 // NewUnauthorizedf creates a new unauthorized auth error with fmt.Printf style formatting.
 // This will also resolve as an Auth error.
 func NewUnauthorizedf(format string, a ...interface{}) Error {
 	data := fmt.Sprintf(format, a...)
 	return NewUnauthorized(data)
+}
+
+// NewUnauthorizedWithHttp creates a new error containing a http specific
+// error message.
+func NewUnauthorizedWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg, IsUnauthorizedErr: true}
+}
+
+// NewWithHttp creates a new error containing a http specific
+// error message.
+func NewUnauthorizedWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewUnauthorizedWithHttp(httpMsg, data)
 }
 
 // NewNotFound creates a new not found error.
@@ -268,6 +352,19 @@ func NewNotFoundf(format string, a ...interface{}) Error {
 	return NewNotFound(data)
 }
 
+// NewNotFoundWithHttp creates a new error containing a http specific
+// error message.
+func NewNotFoundWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg, IsNotFoundErr: true}
+}
+
+// NewNotFoundWithHttp creates a new error containing a http specific
+// error message.
+func NewNotFoundWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewNotFoundWithHttp(httpMsg, data)
+}
+
 // NewRetryable creates a new retryable error.
 func NewRetryable(data interface{}) Error {
 	return Error{Data: data, IsRetryableErr: true}
@@ -277,6 +374,19 @@ func NewRetryable(data interface{}) Error {
 func NewRetryablef(format string, a ...interface{}) Error {
 	data := fmt.Sprintf(format, a...)
 	return NewRetryable(data)
+}
+
+// NewRetryableWithHttp creates a new error containing a http specific
+// error message.
+func NewRetryableWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg, IsRetryableErr: true}
+}
+
+// NewRetryableWithHttp creates a new error containing a http specific
+// error message.
+func NewRetryableWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewRetryableWithHttp(httpMsg, data)
 }
 
 // NewConflict creates a new Conflict error.
@@ -290,6 +400,19 @@ func NewConflictf(format string, a ...interface{}) Error {
 	return NewConflict(data)
 }
 
+// NewConflictWithHttp creates a new error containing a http specific
+// error message.
+func NewConflictWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg, IsConflictErr: true}
+}
+
+// NewConflictWithHttp creates a new error containing a http specific
+// error message.
+func NewConflictWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewConflictWithHttp(httpMsg, data)
+}
+
 // NewPreconditionFailed creates a new PreconditionFailed error.
 func NewPreconditionFailed(data interface{}) Error {
 	return Error{Data: data, IsPreconditionFailedErr: true}
@@ -299,6 +422,19 @@ func NewPreconditionFailed(data interface{}) Error {
 func NewPreconditionFailedf(format string, a ...interface{}) Error {
 	data := fmt.Sprintf(format, a...)
 	return NewPreconditionFailed(data)
+}
+
+// NewPreconditionFailedWithHttp creates a new error containing a http specific
+// error message.
+func NewPreconditionFailedWithHttp(httpMsg string, data interface{}) Error {
+	return Error{Data: data, HttpMsg: httpMsg, IsPreconditionFailedErr: true}
+}
+
+// NewPreconditionFailedWithHttp creates a new error containing a http specific
+// error message.
+func NewPreconditionFailedWithHttpf(httpMsg string, format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewPreconditionFailedWithHttp(httpMsg, data)
 }
 
 // ClErrCheck implements the ClErrChecker interface. It can be embedded in a custom struct to
