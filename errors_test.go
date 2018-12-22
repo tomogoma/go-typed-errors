@@ -13,6 +13,12 @@ type testCase struct {
 	messageParams []interface{}
 }
 
+var errWithAllFlagsTrue = errors.Error{
+	IsAuthErr: true, IsUnauthorizedErr: true, IsForbiddenErr: true, IsClErr: true,
+	IsNotFoundErr: true, IsNotImplementedErr: true, IsRetryableErr: true,
+	IsConflictErr: true, IsPreconditionFailedErr: true, Data: "",
+}
+
 func Example() {
 
 	// embed relevant 'Checkers' in struct
@@ -415,7 +421,7 @@ func TestNewConflict(t *testing.T) {
 					tc.message, err.Error())
 			}
 			if !checker.IsConflictError(err) {
-				t.Errorf("Expected IsRetryableError() true but got %t",
+				t.Errorf("Expected IsConflictError() true but got %t",
 					checker.IsRetryableError(err))
 			}
 		})
@@ -437,10 +443,54 @@ func TestNewConflictf(t *testing.T) {
 					fmt.Sprintf(tc.message, tc.messageParams...), err.Error())
 			}
 			if !checker.IsConflictError(err) {
-				t.Errorf("Expected IsRetryableError() true but got %t",
-					checker.IsRetryableError(err))
+				t.Errorf("Expected IsConflictError() true but got %t",
+					checker.IsConflictError(err))
 			}
 		})
+	}
+}
+
+func TestNewPreconditionFailed(t *testing.T) {
+	for _, tc := range messageTestCases() {
+		t.Run(tc.name, func(t *testing.T) {
+			err := errors.NewPreconditionFailed(tc.message)
+			if err.Error() != tc.message {
+				t.Errorf("expected error message '%s', got '%s'",
+					tc.message, err.Error())
+			}
+			if !err.IsPreconditionFailedErr {
+				t.Errorf("Expected IsPreconditionFailedErr to be true but got %t", err.IsPreconditionFailedErr)
+			}
+		})
+	}
+}
+
+func TestNewPreconditionFailedf(t *testing.T) {
+	for _, tc := range fmtdMessageTestCases() {
+		t.Run(tc.name, func(t *testing.T) {
+			err := errors.NewPreconditionFailedf(tc.message, tc.messageParams...)
+
+			if err.Error() != fmt.Sprintf(tc.message, tc.messageParams...) {
+				t.Fatalf("expected error message '%s', got '%s'",
+					fmt.Sprintf(tc.message, tc.messageParams...), err.Error())
+			}
+			if !err.IsPreconditionFailedErr {
+				t.Errorf("Expected IsPreconditionFailedErr to be true but got %t", err.IsPreconditionFailedErr)
+			}
+		})
+	}
+}
+
+func TestPreconditionFailedErrCheck_IsPreconditionFailedError(t *testing.T) {
+	preconditionErr := errWithAllFlagsTrue
+	nonPreconditionErr := errWithAllFlagsTrue
+	nonPreconditionErr.IsPreconditionFailedErr = false
+	checker := errors.AllErrCheck{}
+	if ok := checker.IsPreconditionFailedError(preconditionErr); !ok {
+		t.Fatalf("expected IsPreconditionFailedError true but got false on %+v", preconditionErr)
+	}
+	if ok := checker.IsPreconditionFailedError(nonPreconditionErr); ok {
+		t.Fatalf("expected IsPreconditionFailedError false but got true on %+v", nonPreconditionErr)
 	}
 }
 

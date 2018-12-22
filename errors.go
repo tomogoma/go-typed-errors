@@ -31,6 +31,10 @@ type IsConflictErrChecker interface {
 	IsConflictError(error) bool
 }
 
+type IsPreconditionFailedErrChecker interface {
+	IsPreconditionFailedError(error) bool
+}
+
 type AllErrChecker interface {
 	IsAuthErrChecker
 	IsNotFoundErrChecker
@@ -38,6 +42,7 @@ type AllErrChecker interface {
 	IsClErrChecker
 	IsRetryableErrChecker
 	IsConflictErrChecker
+	IsPreconditionFailedErrChecker
 }
 
 type ToHTTPResponser interface {
@@ -65,15 +70,16 @@ func (e ErrToHTTP) ToHTTPResponse(err error, w http.ResponseWriter) (int, bool) 
 // Error implements the Error interface and helps distinguish whether an error
 // is a client error or an auth error.
 type Error struct {
-	IsAuthErr           bool
-	IsUnauthorizedErr   bool
-	IsForbiddenErr      bool
-	IsClErr             bool
-	IsNotFoundErr       bool
-	IsNotImplementedErr bool
-	IsRetryableErr      bool
-	IsConflictErr       bool
-	Data                interface{}
+	IsAuthErr               bool
+	IsUnauthorizedErr       bool
+	IsForbiddenErr          bool
+	IsClErr                 bool
+	IsNotFoundErr           bool
+	IsNotImplementedErr     bool
+	IsRetryableErr          bool
+	IsConflictErr           bool
+	IsPreconditionFailedErr bool
+	Data                    interface{}
 }
 
 // Error returns the error message of the error (without the distinguishing flags
@@ -126,6 +132,11 @@ func (e Error) ToHTTPResponse(w http.ResponseWriter) (int, bool) {
 		return http.StatusConflict, true
 	}
 
+	if e.IsPreconditionFailedErr {
+		http.Error(w, e.Error(), http.StatusPreconditionFailed)
+		return http.StatusPreconditionFailed, true
+	}
+
 	return -1, false
 }
 
@@ -165,6 +176,12 @@ func (e Error) Retryable() bool {
 // HTTPs 409 error
 func (e Error) Conflict() bool {
 	return e.IsConflictErr
+}
+
+// PreconditionFailed returns true if this error denotes a
+// precondition failure in resources a la HTTPs 412 error
+func (e Error) PreconditionFailed() bool {
+	return e.IsPreconditionFailedErr
 }
 
 // New creates a new error.
@@ -271,6 +288,17 @@ func NewConflict(data interface{}) Error {
 func NewConflictf(format string, a ...interface{}) Error {
 	data := fmt.Sprintf(format, a...)
 	return NewConflict(data)
+}
+
+// NewPreconditionFailed creates a new PreconditionFailed error.
+func NewPreconditionFailed(data interface{}) Error {
+	return Error{Data: data, IsPreconditionFailedErr: true}
+}
+
+// NewPreconditionFailedf creates a new PreconditionFailed error with fmt.Printf style formatting.
+func NewPreconditionFailedf(format string, a ...interface{}) Error {
+	data := fmt.Sprintf(format, a...)
+	return NewPreconditionFailed(data)
 }
 
 // ClErrCheck implements the ClErrChecker interface. It can be embedded in a custom struct to
@@ -380,6 +408,22 @@ func (c *ConflictErrCheck) IsConflictError(err error) bool {
 	return ok && errC.Conflict()
 }
 
+// PreconditionFailedErrCheck implements the PreconditionFailedErrChecker interface.
+// It can be embedded in a custom struct to give the custom struct the extra method
+// IsPreconditionFailedError(err error). e.g:
+//  type Custom struct {
+//      ...
+//      errors.PreconditionFailedErrCheck
+//  }
+type PreconditionFailedErrCheck struct {
+}
+
+// IsConflictError returns true if the supplied error is a Conflict error, false otherwise.
+func (c *PreconditionFailedErrCheck) IsPreconditionFailedError(err error) bool {
+	errC, ok := err.(Error)
+	return ok && errC.PreconditionFailed()
+}
+
 // AllErrCheck implements the AllErrChecker interface. It can be embedded in a custom struct to
 // give said custom struct the extra Is...Error(err error) methods. e.g:
 //  type Custom struct {
@@ -393,4 +437,5 @@ type AllErrCheck struct {
 	ClErrCheck
 	RetryableErrCheck
 	ConflictErrCheck
+	PreconditionFailedErrCheck
 }
